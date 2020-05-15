@@ -1,0 +1,24 @@
+<html>
+
+<head>
+	<meta charset="utf-8" />
+	<script src="../wasm_exec.js"></script>
+	<script>
+		const go = new Go();
+		WebAssembly.instantiateStreaming(fetch("main.wasm"), go.importObject).then((result) => {
+			go.run(result.instance).then(() => console.log("wasm program exited"));
+		}).then(() => {
+			const output = runMachine([1, 1, 1, 0, 0, 0, 1, 1, 0, 1, 0]);
+			console.log("Output:", output)
+		})
+	</script>
+</head>
+
+<body>
+	<h1>Test 3</h1>
+	<h2>export function to execute sequence</h2>
+	Open console to see output.
+
+</body>
+
+</html>
