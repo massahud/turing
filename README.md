@@ -218,8 +218,7 @@ to wait until the function was called. We can do it easily with a channel.
     <-exit
 ```
 
-As we can see when executing test4, the program works as expected. Which means 
-we can use the same shutdown techniques that we use for go applications.
+As we can see when executing test4, the program now works as expected. 
 
 ![test4 output](./assets/test4_output.png)
 
@@ -231,6 +230,7 @@ Next tests that I would like to try:
 - Object return
 - Output on document
 - DOM interaction from Go code
+- "Parallel" function calls
 - Multiple wasm program instances
 
 ## Licensing
