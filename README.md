@@ -10,10 +10,10 @@ This project and this document will grow as I do more tests on web assembly.
     - [Compiling web assembly](#compiling-web-assembly)
     - [Executing web assembly](#executing-web-assembly)
   - [Tests](#tests)
-    - [Test1: Simple execution with no interaction](#test1-simple-execution-with-no-interaction)
-    - [Test2: Reading the sequence as a global variable](#test2-reading-the-sequence-as-a-global-variable)
-    - [Test3: Exporting a function to execute](#test3-exporting-a-function-to-execute)
-    - [Test4: Wait for function execution](#test4-wait-for-function-execution)
+    - [Test 1: Simple execution with no interaction](#test-1-simple-execution-with-no-interaction)
+    - [Test 2: Reading the sequence as a global variable](#test-2-reading-the-sequence-as-a-global-variable)
+    - [Test 3: Exporting a function to execute](#test-3-exporting-a-function-to-execute)
+    - [Test 4: Wait for function execution](#test-4-wait-for-function-execution)
     - [TODO](#todo)
   - [Licensing](#licensing)
 
@@ -79,9 +79,9 @@ To serve the files
 
 To understand wasm under go I am creating some simple tests and exploring step by step what I can do.
 
-### Test1: Simple execution with no interaction
+### Test 1: Simple execution with no interaction
 
-Test files: https://github.com/massahud/turing/wasm/test1
+[Test 1 files](wasm/test1)
 
 The first test is just a simple execution of main, with everything inside it 
 and only print output.
@@ -90,9 +90,9 @@ As we can see after the execution, it runs and the output is written to the
 console.
 ![test1 output](./assets/test1_output.png)
 
-### Test2: Reading the sequence as a global variable
+### Test 2: Reading the sequence as a global variable
 
-Test files: https://github.com/massahud/turing/wasm/test2
+[Test 2 files](wasm/test2)
 
 For the second test, I wanted to use bindings to read global variables from
 javascript. To do it I used the `syscall/js` package, which is the current go
@@ -133,9 +133,9 @@ sequence from javascript:
 
 ![test2 output](./assets/test2_output.png)
 
-### Test3: Exporting a function to execute
+### Test 3: Exporting a function to execute
 
-Test files: https://github.com/massahud/turing/wasm/test3
+[Test 3 files](wasm/test3)
 
 In this test, we are going to try to export a function so javascript can call 
 the function instead of setting global variables.
@@ -196,9 +196,9 @@ us to Test 4.
 
 ![test3 output](./assets/test3_output.png)
 
-### Test4: Wait for function execution
+### Test 4: Wait for function execution
 
-Test files: https://github.com/massahud/turing/wasm/test4
+[Test 4 files](wasm/test4)
 
 Since we can't finish the program before the execution, let's change main
 to wait until the function was called. We can do it easily with a channel.
