@@ -9,9 +9,10 @@
 			go.run(result.instance).then(() => console.log("wasm program exited"));
 		}).then(() => {
 			const arr = Uint8Array.of(1, 1, 1, 0, 0, 0, 1, 1, 0, 1, 0);
+			console.log("arr:", arr)
 			output = runMachine(arr);
 			console.log("Output:", output)
-			console.log("Arr:", arr)
+			console.log("arr:", arr)
 		})
 	</script>
 </head>
