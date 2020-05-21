@@ -1,4 +1,4 @@
-.PHONY: all clean run wasm test
+.PHONY: all clean run test
 
 wasms := $(patsubst %.go,%.wasm,$(wildcard wasm/test*/main.go))
 
@@ -17,7 +17,8 @@ wasm/main: ./*.go wasm/main.go
 wasm/wasm_exec.js:
 	cp "$(go env GOROOT)/misc/wasm/wasm_exec.js" .
 
-$(wasms) &: $(patsubst %.wasm,%.go,$@)
+
+wasm/test%.wasm: wasm/test%.go
 	GOOS=js GOARCH=wasm go build -o $@ $(patsubst %.wasm,%.go,$@)
 
 

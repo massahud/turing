@@ -14,6 +14,7 @@ This project and this document will grow as I do more tests on web assembly.
     - [Test 2: Reading the sequence as a global variable](#test-2-reading-the-sequence-as-a-global-variable)
     - [Test 3: Exporting a function to execute](#test-3-exporting-a-function-to-execute)
     - [Test 4: Wait for function execution](#test-4-wait-for-function-execution)
+    - [Test 5: Uint8Array](#test-5-uint8array)
     - [TODO](#todo)
   - [Licensing](#licensing)
 
@@ -24,16 +25,17 @@ A machine has state, a head and a program. The head attaches to a tape and can m
 
 ## Execution
 
-`make run` opens a file server on port 9090 
+`make run` opens a file server on port 9090
 where you can navigate to the tests.
+
 ```sh
 make run
 ```
 
 ## Web Assembly basics
 
-Web Assembly is a binary instruction format for a stack based virtual machine, 
-and the principal browser vendors can run it. With web assembly we can write 
+Web Assembly is a binary instruction format for a stack based virtual machine,
+and the principal browser vendors can run it. With web assembly we can write
 code in other language than javascript and compile it to web assembly. Since
 browsers vendors implement it with fast execution in mind, they usually run
 faster than hand written javascript.
@@ -73,7 +75,7 @@ cd wasm
 cp "$(go env GOROOT)/misc/wasm/wasm_exec.js" .
 ```
 
-To serve the files 
+To serve the files
 
 ## Tests
 
@@ -83,10 +85,10 @@ To understand wasm under go I am creating some simple tests and exploring step b
 
 [Test 1 files](wasm/test1)
 
-The first test is just a simple execution of main, with everything inside it 
+The first test is just a simple execution of main, with everything inside it
 and only print output.
 
-As we can see after the execution, it runs and the output is written to the 
+As we can see after the execution, it runs and the output is written to the
 console.
 ![test1 output](./assets/test1_output.png)
 
@@ -100,11 +102,13 @@ package for js bindings.
 
 The global javascript variable that we are going to use is window.sequence, set
  at line `7` of index.html as:
+
  ```javascript
     window.sequence = [1,1,1,0,0,0,1,1,0,1,0];
  ```
 
-To obtain the variable, we use 
+To obtain the variable, we use
+
 ```go
     js.Global().Get("sequence")
 ```
@@ -128,7 +132,7 @@ If `jsSequence` was not an array of ints, those calls would panic.
     }
 ```
 
-The output was again on the console. As expected, we got the global 
+The output was again on the console. As expected, we got the global
 sequence from javascript:
 
 ![test2 output](./assets/test2_output.png)
@@ -137,17 +141,17 @@ sequence from javascript:
 
 [Test 3 files](wasm/test3)
 
-In this test, we are going to try to export a function so javascript can call 
+In this test, we are going to try to export a function so javascript can call
 the function instead of setting global variables.
 
 To do it we will use `js.Global().Set(js.FuncOf())`, this will set a window global
 variable as a go function.
 
 `js.FuncOf()` refeives a function with two arguments, the first is the javascript
-`this` Value, and the second an of arguments values. The function returns an `interface{}`, 
+`this` Value, and the second an of arguments values. The function returns an `interface{}`,
 that javascript receives as return value.
 
-So we create a `runMachine` global variable, its first arg (`args[0]`) is the sequence, 
+So we create a `runMachine` global variable, its first arg (`args[0]`) is the sequence,
 and it returns the output as a string.
 
 ```go
@@ -164,22 +168,23 @@ js.Global().Set("runMachine", js.FuncOf(func(this js.Value, args []js.Value) int
         }
 
         [...]
-        
+
         tape := turing.NewInfiniteTape()
         tape.Set(0, sequence...)
         head.Attach(tape, 0)
 
         [...]
-        
+
         err := machine.Run()
-        
+
         [...]
-        
+
         return builder.String()
     }))
 ```
 
 To run it, I changed the javascript slightly:
+
 ```javascript
     WebAssembly.instantiateStreaming(fetch("main.wasm"), go.importObject).then((result) => {
         go.run(result.instance).then(() => console.log("wasm program exited"));
@@ -218,11 +223,52 @@ to wait until the function was called. We can do it easily with a channel.
     <-exit
 ```
 
-As we can see when executing test4, the program now works as expected. 
+As we can see when executing test4, the program now works as expected.
 
 ![test4 output](./assets/test4_output.png)
 
-### TODO 
+### Test 5: Uint8Array
+
+[Test 5 files](wasm/test5)
+
+Test 5 uses CopyDataToGo and CopyDataToJs to copy UintArray data from
+go and js. It receives an Uint8Array as parameters, runs the machine
+and copies the tape data to this array at the end.
+
+Since the tape is not expecting bytes, we have to internally create a Symbol
+slice and copy each byte to it. The best option would be to have a tape with
+byte array capacities, but for the purpose of this test, it is enough.
+
+```go
+js.Global().Set("runMachine", js.FuncOf(func(this js.Value, args []js.Value) interface{} {
+    jsArr := args[0]
+    ...
+    byteSequence := make([]byte, jsArr.Length(), jsArr.Length())
+    js.CopyBytesToGo(byteSequence, jsArr)
+
+    sequence := make([]turing.Symbol, len(byteSequence), len(byteSequence))
+    for i := range byteSequence {
+        sequence[i] = byteSequence[i]
+    }
+    ...
+    err := machine.Run()
+    if err != nil {
+        return fmt.Sprint("ERROR: error executing machine:", err.Error())
+    }
+
+    for i := range byteSequence {
+        v, _ := tape.Get(i)
+        byteSequence[i] = v.(byte)
+    }
+    js.CopyBytesToJS(jsArr, byteSequence)
+    ...
+}))
+```
+
+We also have to change the machine operations to cast the symbols to byte,
+otherwise it mismatches the constant numbers 0 and 1 with the bytes.
+
+### TODO
 
 Next tests that I would like to try:
 
@@ -235,7 +281,7 @@ Next tests that I would like to try:
 
 ## Licensing
 
-```
+```text
 Copyright 2020, Geraldo Augusto Massahud Rodrigues dos Santos
 
 Licensed under the Apache License, Version 2.0 (the "License");
